@@ -19,3 +19,32 @@ services:
     depends_on:
       - db
 
+  redis:
+    image: redis:alpine
+
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A hotel worker -l DEBUG -P solo
+    volumes:
+      - .:/code
+    environment:
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - C_FORCE_ROOT=true
+    # env_file:
+    #   - ./.env
+    depends_on:
+      - redis
+
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A hotel beat -l DEBUG --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - .:/code
+    depends_on:
+      - redis
+

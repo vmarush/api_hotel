@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'rooms',
     'rest_framework',
     'psycopg2',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -96,6 +97,29 @@ DATABASES = {
     "default": env.db(),
 }
 
+CELERY_TIMEZONE = "Europe/Moscow"
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+CELERY_BROKER_URL = env.str("CELERY_BROKER", "redis://redis:6379/0")
+CELERY_BROKER_TRANSPORT_OPTIONS = {"visibility_timeout": 3600}
+# CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/0'
+CELERY_RESULT_BACKEND = env.str("CELERY_RESULT_BACKEND", "redis://redis:6379/0")
+CELERY_ACCEPT_CONTENT = ["application/json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_IMPORTS = ("rooms.tasks",)
+
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)],
+        },
+        # "LOCATION": "redis://redis:6379/0",
+    },
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators

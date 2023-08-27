@@ -23,3 +23,7 @@ class HotelSerializer(serializers.ModelSerializer):
     def get_rooms(self, hotel):
         serializers = RoomHotelSerializer(hotel.rooms.all(), many=True)
         return serializers.data
+
+    class Meta:
+        model = Hotel
+        fields = ['id', 'title', 'description', 'rooms']

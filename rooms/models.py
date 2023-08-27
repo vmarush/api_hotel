@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 class Room(models.Model):
@@ -42,3 +44,8 @@ class Book(models.Model):
     class Meta:
         verbose_name = "Запись бронирования"
         verbose_name_plural = "Записи бронирования"
+
+@receiver(post_save, sender=Book)
+def update_room(sender, instance, **kwargs):
+    instance.room.is_booked = True
+    instance.room.save()
